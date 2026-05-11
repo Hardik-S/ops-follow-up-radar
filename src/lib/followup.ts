@@ -14,7 +14,13 @@ export type InboxThread = {
   excerpt: string;
 };
 
-export type FollowUpState = "stale-ask" | "owner-ambiguous" | "deadline-risk" | "waiting" | "no-action";
+export type FollowUpState =
+  | "stale-ask"
+  | "needs-response"
+  | "owner-ambiguous"
+  | "deadline-risk"
+  | "waiting"
+  | "no-action";
 
 export type FollowUpResult = {
   thread: InboxThread;
@@ -36,6 +42,7 @@ export type ReviewQueueItem = {
 
 const nextActions: Record<FollowUpState, string> = {
   "stale-ask": "Draft a concise check-in that restates the open ask and proposes one concrete next step.",
+  "needs-response": "Draft a focused reply to answer the open ask before it becomes stale.",
   "owner-ambiguous": "Draft an owner-clarification note before any follow-up is sent.",
   "deadline-risk": "Draft a deadline-focused reply that names the due date and decision needed.",
   waiting: "Keep on the waiting list and set a reminder; do not chase unless the date slips.",
@@ -63,7 +70,7 @@ export function classifyThread(thread: InboxThread): FollowUpResult {
 
   if (thread.deadlineDaysAway !== null && thread.deadlineDaysAway <= 2 && thread.waitingOn === "me") {
     urgency += 30;
-    evidence.push(`Deadline is ${thread.deadlineDaysAway} day(s) away.`);
+    evidence.push(formatDeadlineEvidence(thread.deadlineDaysAway));
   }
 
   if (thread.waitingOn === "them") {
@@ -95,6 +102,7 @@ export function summarizeRadar(results: FollowUpResult[]) {
     },
     {
       "stale-ask": 0,
+      "needs-response": 0,
       "owner-ambiguous": 0,
       "deadline-risk": 0,
       waiting: 0,
@@ -106,6 +114,7 @@ export function summarizeRadar(results: FollowUpResult[]) {
 
 export function buildReviewQueue(results: FollowUpResult[]): ReviewQueueItem[] {
   return [...results]
+    .filter((result) => result.state !== "no-action")
     .sort((left, right) => right.urgency - left.urgency || left.thread.id.localeCompare(right.thread.id))
     .map((result) => ({
       threadId: result.thread.id,
@@ -173,6 +182,10 @@ function buildReviewChecklist(result: FollowUpResult): string[] {
     checklist.push("Restate the open ask and choose one next step");
   }
 
+  if (result.state === "needs-response") {
+    checklist.push("Answer the open ask before it becomes stale");
+  }
+
   if (result.state === "waiting") {
     checklist.push("Verify whether a reminder is better than a chase email");
   }
@@ -198,9 +211,25 @@ function chooseState(thread: InboxThread): FollowUpState {
     return "stale-ask";
   }
 
+  if (thread.hasUnansweredQuestion && thread.waitingOn === "me") {
+    return "needs-response";
+  }
+
   if (thread.waitingOn === "them") {
     return "waiting";
   }
 
   return "no-action";
+}
+
+function formatDeadlineEvidence(deadlineDaysAway: number): string {
+  if (deadlineDaysAway < 0) {
+    return `Deadline is overdue by ${Math.abs(deadlineDaysAway)} day${Math.abs(deadlineDaysAway) === 1 ? "" : "s"}.`;
+  }
+
+  if (deadlineDaysAway === 0) {
+    return "Deadline is due today.";
+  }
+
+  return `Deadline is ${deadlineDaysAway} day${deadlineDaysAway === 1 ? "" : "s"} away.`;
 }

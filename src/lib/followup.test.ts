@@ -40,12 +40,18 @@ describe("classifyThread", () => {
       "TH-2041",
       "TH-2186",
       "TH-2077",
-      "TH-2112",
-      "TH-2205"
+      "TH-2112"
     ]);
     expect(queue.every((item) => item.humanApprovalRequired)).toBe(true);
     expect(queue[0].reviewChecklist).toContain("Confirm the deadline before drafting");
     expect(queue[0].sourceTrail).toEqual(["synthetic://inbox/revenue-ops/TH-2041"]);
+  });
+
+  it("keeps no-action reference threads out of the outbound review queue", () => {
+    const queue = buildReviewQueue(inboxThreads.map(classifyThread));
+
+    expect(queue.map((item) => item.threadId)).not.toContain("TH-2205");
+    expect(queue.every((item) => item.state !== "no-action")).toBe(true);
   });
 
   it("creates a reviewer packet with source evidence and no-send language", () => {
@@ -56,6 +62,7 @@ describe("classifyThread", () => {
     expect(packet).toContain("synthetic://inbox/revenue-ops/TH-2041");
     expect(packet).toContain("Owner path is ambiguous.");
     expect(packet).toContain("TH-2186");
+    expect(packet).not.toContain("TH-2205");
   });
 
   it("creates an empty-state reviewer packet without inventing actions", () => {
@@ -84,5 +91,33 @@ describe("classifyThread", () => {
     expect(queue).toEqual([]);
     expect(summary.totalUrgency).toBe(0);
     expect(summary["deadline-risk"]).toBe(0);
+  });
+
+  it("keeps fresh unanswered asks actionable even before they become stale", () => {
+    const result = classifyThread({
+      ...inboxThreads[4],
+      id: "TH-FRESH",
+      waitingOn: "me",
+      hasUnansweredQuestion: true,
+      lastInboundDaysAgo: 2,
+      deadlineDaysAway: null
+    });
+
+    expect(result.state).toBe("needs-response");
+    expect(result.nextAction).toContain("answer the open ask");
+  });
+
+  it("normalizes due-today and overdue deadline evidence", () => {
+    const dueToday = classifyThread({
+      ...inboxThreads[0],
+      deadlineDaysAway: 0
+    });
+    const overdue = classifyThread({
+      ...inboxThreads[0],
+      deadlineDaysAway: -2
+    });
+
+    expect(dueToday.evidence.join(" ")).toContain("Deadline is due today.");
+    expect(overdue.evidence.join(" ")).toContain("Deadline is overdue by 2 days.");
   });
 });

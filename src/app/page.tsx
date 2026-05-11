@@ -1,9 +1,11 @@
 import { inboxThreads } from "../data/inbox";
 import { buildReviewQueue, classifyThread, createFollowUpPacket, summarizeRadar } from "../lib/followup";
+import { PacketActions } from "./PacketActions";
 
 const stateLabels = {
   "deadline-risk": "Deadline risk",
   "stale-ask": "Stale ask",
+  "needs-response": "Needs response",
   "owner-ambiguous": "Owner ambiguous",
   waiting: "Waiting",
   "no-action": "No action"
@@ -16,10 +18,12 @@ export default function Home() {
   const topReview = reviewQueue[0];
   const packetPreview = createFollowUpPacket(results);
   const resultsByThreadId = new Map(results.map((result) => [result.thread.id, result]));
-  const prioritizedResults = reviewQueue.flatMap((item) => {
+  const prioritizedActionResults = reviewQueue.flatMap((item) => {
     const result = resultsByThreadId.get(item.threadId);
     return result ? [result] : [];
   });
+  const noActionResults = results.filter((result) => result.state === "no-action");
+  const boardResults = [...prioritizedActionResults, ...noActionResults];
 
   return (
     <main>
@@ -41,6 +45,25 @@ export default function Home() {
           <strong>Dry-run only</strong>
           <p>Every next action is a preview for human approval, not an automated email send.</p>
         </div>
+      </section>
+
+      <section className="commandBar" aria-label="Reviewer command bar">
+        <div>
+          <span>Current packet</span>
+          <strong>{topReview ? `${topReview.threadId} needs review` : "Fixture clear"}</strong>
+        </div>
+        <div>
+          <span>Action queue</span>
+          <strong>{reviewQueue.length} actionable</strong>
+        </div>
+        <a href="#review-queue">Review queue</a>
+        <a href="#packet-preview">Inspect packet</a>
+        <a
+          download="ops-follow-up-radar-review-packet.md"
+          href={`data:text/markdown;charset=utf-8,${encodeURIComponent(packetPreview)}`}
+        >
+          Download Markdown
+        </a>
       </section>
 
       <section className="reviewStrip" aria-label="Reviewer quick path">
@@ -75,7 +98,7 @@ export default function Home() {
         ))}
       </section>
 
-      <section className="workflow" aria-label="Human review workflow">
+      <section className="workflow" id="review-queue" aria-label="Human review workflow">
         <div>
           <p className="eyebrow">Operator queue</p>
           <h2>Human review before any outbound action</h2>
@@ -85,26 +108,30 @@ export default function Home() {
             automation.
           </p>
         </div>
-        <ol>
-          {reviewQueue.slice(0, 3).map((item) => (
-            <li key={item.threadId}>
-              <div>
-                <span className={`status ${item.state}`}>{stateLabels[item.state]}</span>
-                <strong>{item.threadId}</strong>
-                <p>{item.subject}</p>
-              </div>
-              <ul>
-                {item.reviewChecklist.slice(0, 2).map((check) => (
-                  <li key={check}>{check}</li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ol>
+        {reviewQueue.length > 0 ? (
+          <ol>
+            {reviewQueue.slice(0, 3).map((item) => (
+              <li key={item.threadId}>
+                <div>
+                  <span className={`status ${item.state}`}>{stateLabels[item.state]}</span>
+                  <strong>{item.threadId}</strong>
+                  <p>{item.subject}</p>
+                </div>
+                <ul>
+                  {item.reviewChecklist.slice(0, 2).map((check) => (
+                    <li key={check}>{check}</li>
+                  ))}
+                </ul>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="emptyState">No actionable outbound review items are present in this fixture set.</p>
+        )}
       </section>
 
       <section className="board" aria-label="Inbox follow-up radar">
-        {prioritizedResults.map((result) => (
+        {boardResults.map((result) => (
           <article className="case" key={result.thread.id}>
             <div className="caseHeader">
               <div>
@@ -122,7 +149,7 @@ export default function Home() {
             <p className="memo">{result.thread.excerpt}</p>
             <div className="evidence">
               <h3>Source-linked evidence</h3>
-              <a href={result.thread.source}>{result.thread.source}</a>
+              <span className="sourceChip">{result.thread.source}</span>
               <ul>
                 {result.evidence.map((item) => (
                   <li key={item}>{item}</li>
@@ -137,7 +164,7 @@ export default function Home() {
         ))}
       </section>
 
-      <section className="packet" aria-label="Reviewer packet preview">
+      <section className="packet" id="packet-preview" aria-label="Reviewer packet preview">
         <div>
           <p className="eyebrow">Reviewer packet preview</p>
           <h2>Copy-ready handoff without mailbox mutation</h2>
@@ -145,6 +172,7 @@ export default function Home() {
             The packet keeps evidence and source links together, making the approval boundary
             inspectable before a human rewrites or sends anything.
           </p>
+          <PacketActions packet={packetPreview} />
         </div>
         <pre>{packetPreview}</pre>
       </section>

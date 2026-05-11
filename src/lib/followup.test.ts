@@ -77,6 +77,19 @@ describe("classifyThread", () => {
     expect(result.evidence.join(" ")).not.toContain("Deadline is 1 day");
   });
 
+  it("does not assign stale-ask urgency when no question is open", () => {
+    const result = classifyThread({
+      ...inboxThreads[4],
+      lastInboundDaysAgo: 12,
+      waitingOn: "me",
+      hasUnansweredQuestion: false
+    });
+
+    expect(result.state).toBe("no-action");
+    expect(result.urgency).toBe(0);
+    expect(result.evidence.join(" ")).not.toContain("Inbound ask is stale");
+  });
+
   it("keeps empty reviewer queues safe for UI summary rendering", () => {
     const queue = buildReviewQueue([]);
     const summary = summarizeRadar([]);

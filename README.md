@@ -78,7 +78,7 @@ Production URL: `https://ops-follow-up-radar.vercel.app`
 
 Latest deployment evidence:
 
-- Commit: `0ea858cfe03874642ee6ecd5f3ba34bab28d8535`
+- Product change commit: `0ea858cfe03874642ee6ecd5f3ba34bab28d8535`
 - Vercel project: `ops-follow-up-radar` (`prj_r6ySKQo5TnSPjay7NpMADMKVnc7Q`)
 - Production deployment: `https://ops-follow-up-radar-nhgraf7r7-batb4016-9101s-projects.vercel.app`
 - Production inspect URL: `https://vercel.com/batb4016-9101s-projects/ops-follow-up-radar/DTYXWaVk38HKo39a1WqmrhdxkXn9`

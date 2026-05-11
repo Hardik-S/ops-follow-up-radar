@@ -71,6 +71,7 @@ No environment variables are required. Local development runs at the URL printed
 - `npm run verify`
 - GitHub Actions runs `npm ci` and `npm run verify` on pushes to `main`, pushes to `fixer/**`, and pull requests.
 - Production route check after deployment should return HTTP `200` and include `Ops Follow-Up Radar`, `Dry-run only`, `Reviewer packet preview`, and `TH-2041`.
+- Production header check should include `Content-Security-Policy`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`, and `X-Content-Type-Options`.
 
 ## Deploy
 
@@ -102,6 +103,11 @@ Previous deployment evidence:
 - Uses deterministic rules rather than an AI model; the goal is inspectable workflow logic, not natural-language generation.
 - The packet is a review aid, not proof that an email is safe or appropriate to send.
 - Clipboard copy and Markdown download operate only on the generated packet text already visible in the browser.
+
+## Handoff Artifacts
+
+- `docs/HANDOFF.md`: reviewer path, fixture provenance, verification contract, and non-goals.
+- `docs/reviewer-packet.example.md`: committed example of the generated Markdown packet.
 
 ## Future Work
 

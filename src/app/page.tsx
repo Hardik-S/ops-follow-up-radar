@@ -1,5 +1,5 @@
 import { inboxThreads } from "../data/inbox";
-import { classifyThread, summarizeRadar } from "../lib/followup";
+import { buildReviewQueue, classifyThread, createFollowUpPacket, summarizeRadar } from "../lib/followup";
 
 const stateLabels = {
   "deadline-risk": "Deadline risk",
@@ -12,13 +12,25 @@ const stateLabels = {
 export default function Home() {
   const results = inboxThreads.map(classifyThread);
   const summary = summarizeRadar(results);
+  const reviewQueue = buildReviewQueue(results);
+  const topReview = reviewQueue[0];
+  const packetPreview = createFollowUpPacket(results);
+  const resultsByThreadId = new Map(results.map((result) => [result.thread.id, result]));
+  const prioritizedResults = reviewQueue.flatMap((item) => {
+    const result = resultsByThreadId.get(item.threadId);
+    return result ? [result] : [];
+  });
 
   return (
     <main>
       <section className="hero">
         <div>
           <p className="eyebrow">Synthetic inbox operations workflow</p>
-          <h1>Ops Follow-Up Radar</h1>
+          <h1>
+            Ops Follow-Up
+            <br />
+            Radar
+          </h1>
           <p className="lede">
             A fixture-backed action board that classifies stale asks, owner ambiguity, deadline
             pressure, and waiting states without sending anything automatically.
@@ -31,6 +43,29 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="reviewStrip" aria-label="Reviewer quick path">
+        <article>
+          <span>Review first</span>
+          <strong>{topReview?.threadId ?? "Clear"}</strong>
+          <p>{topReview?.subject ?? "No inbox threads need review in this fixture set."}</p>
+        </article>
+        <article>
+          <span>Urgency score</span>
+          <strong>{topReview?.urgency ?? 0}</strong>
+          <p>Ranked ahead of lower-risk or waiting threads.</p>
+        </article>
+        <article>
+          <span>Queue size</span>
+          <strong>{reviewQueue.length}</strong>
+          <p>{summary.totalUrgency} total urgency points across synthetic inbox fixtures.</p>
+        </article>
+        <article>
+          <span>Approval gate</span>
+          <strong>No send</strong>
+          <p>All recommendations remain blocked until a human approves the packet.</p>
+        </article>
+      </section>
+
       <section className="summary" aria-label="Follow-up summary">
         {Object.entries(stateLabels).map(([state, label]) => (
           <article key={state}>
@@ -40,8 +75,36 @@ export default function Home() {
         ))}
       </section>
 
+      <section className="workflow" aria-label="Human review workflow">
+        <div>
+          <p className="eyebrow">Operator queue</p>
+          <h2>Human review before any outbound action</h2>
+          <p>
+            The queue is sorted by urgency and carries source trails, review checks, and an
+            explicit approval gate so the app behaves like decision support rather than mailbox
+            automation.
+          </p>
+        </div>
+        <ol>
+          {reviewQueue.slice(0, 3).map((item) => (
+            <li key={item.threadId}>
+              <div>
+                <span className={`status ${item.state}`}>{stateLabels[item.state]}</span>
+                <strong>{item.threadId}</strong>
+                <p>{item.subject}</p>
+              </div>
+              <ul>
+                {item.reviewChecklist.slice(0, 2).map((check) => (
+                  <li key={check}>{check}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       <section className="board" aria-label="Inbox follow-up radar">
-        {results.map((result) => (
+        {prioritizedResults.map((result) => (
           <article className="case" key={result.thread.id}>
             <div className="caseHeader">
               <div>
@@ -72,6 +135,18 @@ export default function Home() {
             </div>
           </article>
         ))}
+      </section>
+
+      <section className="packet" aria-label="Reviewer packet preview">
+        <div>
+          <p className="eyebrow">Reviewer packet preview</p>
+          <h2>Copy-ready handoff without mailbox mutation</h2>
+          <p>
+            The packet keeps evidence and source links together, making the approval boundary
+            inspectable before a human rewrites or sends anything.
+          </p>
+        </div>
+        <pre>{packetPreview}</pre>
       </section>
     </main>
   );

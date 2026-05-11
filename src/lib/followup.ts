@@ -24,6 +24,16 @@ export type FollowUpResult = {
   nextAction: string;
 };
 
+export type ReviewQueueItem = {
+  threadId: string;
+  subject: string;
+  state: FollowUpState;
+  urgency: number;
+  sourceTrail: string[];
+  reviewChecklist: string[];
+  humanApprovalRequired: true;
+};
+
 const nextActions: Record<FollowUpState, string> = {
   "stale-ask": "Draft a concise check-in that restates the open ask and proposes one concrete next step.",
   "owner-ambiguous": "Draft an owner-clarification note before any follow-up is sent.",
@@ -51,7 +61,7 @@ export function classifyThread(thread: InboxThread): FollowUpResult {
     evidence.push(`Inbound ask is stale at ${thread.lastInboundDaysAgo} days old.`);
   }
 
-  if (thread.deadlineDaysAway !== null && thread.deadlineDaysAway <= 2) {
+  if (thread.deadlineDaysAway !== null && thread.deadlineDaysAway <= 2 && thread.waitingOn === "me") {
     urgency += 30;
     evidence.push(`Deadline is ${thread.deadlineDaysAway} day(s) away.`);
   }
@@ -92,6 +102,87 @@ export function summarizeRadar(results: FollowUpResult[]) {
       totalUrgency: 0
     } satisfies Record<FollowUpState, number> & { totalUrgency: number }
   );
+}
+
+export function buildReviewQueue(results: FollowUpResult[]): ReviewQueueItem[] {
+  return [...results]
+    .sort((left, right) => right.urgency - left.urgency || left.thread.id.localeCompare(right.thread.id))
+    .map((result) => ({
+      threadId: result.thread.id,
+      subject: result.thread.subject,
+      state: result.state,
+      urgency: result.urgency,
+      sourceTrail: [result.thread.source],
+      reviewChecklist: buildReviewChecklist(result),
+      humanApprovalRequired: true
+    }));
+}
+
+export function createFollowUpPacket(results: FollowUpResult[]): string {
+  const lines = [
+    "# Ops Follow-Up Radar Review Packet",
+    "",
+    "Dry-run only: no email was sent, scheduled, archived, or labeled.",
+    "Synthetic fixture boundary: every source uses a synthetic:// inbox link.",
+    ""
+  ];
+
+  if (results.length === 0) {
+    return [
+      ...lines,
+      "No inbox threads were available for review.",
+      "No outbound action is recommended."
+    ].join("\n");
+  }
+
+  buildReviewQueue(results).forEach((item, index) => {
+    const result = results.find((candidate) => candidate.thread.id === item.threadId);
+    if (!result) {
+      return;
+    }
+
+    lines.push(
+      `## ${index + 1}. ${item.threadId} - ${item.subject}`,
+      `State: ${result.state}`,
+      `Urgency: ${result.urgency}`,
+      `Source: ${result.thread.source}`,
+      `Preview action: ${result.nextAction}`,
+      "Evidence:"
+    );
+    result.evidence.forEach((evidence) => lines.push(`- ${evidence}`));
+    lines.push("Human review checklist:");
+    item.reviewChecklist.forEach((check) => lines.push(`- ${check}`));
+    lines.push("");
+  });
+
+  return lines.join("\n").trimEnd();
+}
+
+function buildReviewChecklist(result: FollowUpResult): string[] {
+  const checklist = ["Confirm the source thread is safe to use before drafting"];
+
+  if (result.state === "deadline-risk") {
+    checklist.push("Confirm the deadline before drafting");
+  }
+
+  if (result.state === "owner-ambiguous") {
+    checklist.push("Resolve the owner before any follow-up is written");
+  }
+
+  if (result.state === "stale-ask") {
+    checklist.push("Restate the open ask and choose one next step");
+  }
+
+  if (result.state === "waiting") {
+    checklist.push("Verify whether a reminder is better than a chase email");
+  }
+
+  if (result.state === "no-action") {
+    checklist.push("Confirm no outbound response is needed");
+  }
+
+  checklist.push("Approve or rewrite the preview before anything leaves the outbox");
+  return checklist;
 }
 
 function chooseState(thread: InboxThread): FollowUpState {

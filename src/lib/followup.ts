@@ -63,7 +63,7 @@ export function classifyThread(thread: InboxThread): FollowUpResult {
     evidence.push("Latest thread still contains an unanswered ask for me.");
   }
 
-  if (thread.lastInboundDaysAgo >= 7 && thread.waitingOn === "me") {
+  if (thread.lastInboundDaysAgo >= 7 && thread.hasUnansweredQuestion && thread.waitingOn === "me") {
     urgency += 24;
     evidence.push(`Inbound ask is stale at ${thread.lastInboundDaysAgo} days old.`);
   }

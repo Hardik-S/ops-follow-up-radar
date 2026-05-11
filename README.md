@@ -62,7 +62,13 @@ No environment variables are required. Local development runs at the URL printed
 
 Production URL: `https://ops-follow-up-radar.vercel.app`
 
-Latest worker deployment before this fixer pass served the original board and returned HTTP `200` with `Ops Follow-Up Radar`, `Dry-run only`, and `TH-2041`. This fixer pass adds the reviewer queue and packet preview; record the new Vercel deployment URL/id here after production deploy.
+Latest deployment evidence:
+
+- Commit: `6ce53423fb007f7d8d686d9e3b6333db665e95e8`
+- Vercel project: `ops-follow-up-radar` (`prj_r6ySKQo5TnSPjay7NpMADMKVnc7Q`)
+- Production deployment: `https://ops-follow-up-radar-23iiom0gj-batb4016-9101s-projects.vercel.app`
+- Production alias: `https://ops-follow-up-radar.vercel.app`
+- Route check: HTTP `200` with `Ops Follow-Up Radar`, `Dry-run only`, `Review first`, `Reviewer packet preview`, and `TH-2041`
 
 ## Limitations
 

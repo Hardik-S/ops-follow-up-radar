@@ -76,6 +76,15 @@ No environment variables are required. Local development runs at the URL printed
 
 Production URL: `https://ops-follow-up-radar.vercel.app`
 
+Latest deployment evidence:
+
+- Commit: `0ea858cfe03874642ee6ecd5f3ba34bab28d8535`
+- Vercel project: `ops-follow-up-radar` (`prj_r6ySKQo5TnSPjay7NpMADMKVnc7Q`)
+- Production deployment: `https://ops-follow-up-radar-nhgraf7r7-batb4016-9101s-projects.vercel.app`
+- Production inspect URL: `https://vercel.com/batb4016-9101s-projects/ops-follow-up-radar/DTYXWaVk38HKo39a1WqmrhdxkXn9`
+- Production alias: `https://ops-follow-up-radar.vercel.app`
+- Route check: HTTP `200` with `Ops Follow-Up Radar`, `Dry-run only`, `Copy packet`, `Download Markdown`, `Reviewer packet preview`, `TH-2041`, `TH-2205`, and `Needs response`.
+
 Previous deployment evidence:
 
 - Commit: `6ce53423fb007f7d8d686d9e3b6333db665e95e8`
@@ -83,8 +92,6 @@ Previous deployment evidence:
 - Production deployment: `https://ops-follow-up-radar-23iiom0gj-batb4016-9101s-projects.vercel.app`
 - Production alias: `https://ops-follow-up-radar.vercel.app`
 - Route check: HTTP `200` with `Ops Follow-Up Radar`, `Dry-run only`, `Review first`, `Reviewer packet preview`, and `TH-2041`
-
-That deployment was later documented by commit `d3ef40ed9230d5b2e6fd8abc8508001553bc8926`, which changed README evidence only. The next deployment record should be updated after a production promotion from the current fixer commit.
 
 ## Limitations
 

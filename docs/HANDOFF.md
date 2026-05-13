@@ -14,6 +14,8 @@ All records in `src/data/inbox.ts` are invented examples. The app does not read 
 
 The fixture set intentionally covers `deadline-risk`, `stale-ask`, `owner-ambiguous`, `waiting`, and `no-action` paths.
 
+When every classified thread is reference-only, the generated reviewer packet must still include an explicit no-outbound-action fallback. This keeps the copy/download controls from producing a header-only packet that could look truncated during review.
+
 ## Verification Contract
 
 Run the complete local gate before publishing:

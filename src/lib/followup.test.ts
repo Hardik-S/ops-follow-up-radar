@@ -72,6 +72,19 @@ describe("classifyThread", () => {
     expect(packet).toContain("No outbound action is recommended.");
   });
 
+  it("keeps all-reference reviewer packets explicit when no outbound review item exists", () => {
+    const packet = createFollowUpPacket([
+      classifyThread({
+        ...inboxThreads[4],
+        id: "TH-REFERENCE-ONLY"
+      })
+    ]);
+
+    expect(packet).toContain("No outbound review items were found.");
+    expect(packet).toContain("No outbound action is recommended.");
+    expect(packet).not.toContain("## 1.");
+  });
+
   it("does not rank waiting-on-them deadlines as actionable deadline risk", () => {
     const result = classifyThread({
       ...inboxThreads[2],

@@ -39,7 +39,7 @@ No environment variables are required. Local development runs at the URL printed
 - Shows a first-viewport reviewer quick path with the top queued thread, queue size, urgency score, and approval gate.
 - Builds an urgency-ordered human review queue with source trails and checklist items, while keeping no-action reference threads out of the outbound review queue.
 - Shows source-linked evidence, owner/waiting state, urgency, and a dry-run next action in prioritized order.
-- Generates a Markdown review packet preview that keeps evidence, source links, and no-send language together.
+- Generates a Markdown review packet preview that keeps evidence, source links, and no-send language together; if every fixture is reference-only, the packet says there are no outbound review items instead of showing a blank reviewer body.
 - Provides local-only packet actions: copy to clipboard, download Markdown, and jump to the packet preview.
 - Keeps the no-send boundary visible in the UI because any real email workflow needs explicit human approval.
 

@@ -144,7 +144,17 @@ export function createFollowUpPacket(results: FollowUpResult[]): string {
     ].join("\n");
   }
 
-  buildReviewQueue(results).forEach((item, index) => {
+  const reviewQueue = buildReviewQueue(results);
+
+  if (reviewQueue.length === 0) {
+    return [
+      ...lines,
+      "No outbound review items were found.",
+      "No outbound action is recommended."
+    ].join("\n");
+  }
+
+  reviewQueue.forEach((item, index) => {
     const result = results.find((candidate) => candidate.thread.id === item.threadId);
     if (!result) {
       return;

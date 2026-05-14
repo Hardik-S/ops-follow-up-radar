@@ -4,7 +4,7 @@
 
 1. Open the production URL and confirm the reviewer quick path is visible above the board.
 2. Inspect the top queued thread, urgency score, source trail, checklist, and approval gate.
-3. Compare the prioritized review queue against the full radar board.
+3. Compare the prioritized outbound review queue against the full radar board.
 4. Use the packet action controls and inspect the committed packet example.
 5. Verify that `synthetic://` values are fixture source trails, not live mailbox links.
 
@@ -13,6 +13,8 @@
 All records in `src/data/inbox.ts` are invented examples. The app does not read Gmail, Outlook, Slack, CRM exports, calendars, labels, archives, sent mail, or personal inbox data.
 
 The fixture set intentionally covers `deadline-risk`, `stale-ask`, `owner-ambiguous`, `waiting`, and `no-action` paths.
+
+Waiting-on-counterparty threads are reference items, not outbound packet items. They should remain visible on the radar board so reviewers understand the lane, but they should not appear in the generated packet because their preview action is to monitor rather than chase.
 
 When every classified thread is reference-only, the generated reviewer packet must still include an explicit no-outbound-action fallback. This keeps the copy/download controls from producing a header-only packet that could look truncated during review.
 

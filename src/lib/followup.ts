@@ -114,7 +114,7 @@ export function summarizeRadar(results: FollowUpResult[]) {
 
 export function buildReviewQueue(results: FollowUpResult[]): ReviewQueueItem[] {
   return [...results]
-    .filter((result) => result.state !== "no-action")
+    .filter((result) => result.state !== "no-action" && result.state !== "waiting")
     .sort((left, right) => right.urgency - left.urgency || left.thread.id.localeCompare(right.thread.id))
     .map((result) => ({
       threadId: result.thread.id,
@@ -196,11 +196,7 @@ function buildReviewChecklist(result: FollowUpResult): string[] {
     checklist.push("Answer the open ask before it becomes stale");
   }
 
-  if (result.state === "waiting") {
-    checklist.push("Verify whether a reminder is better than a chase email");
-  }
-
-  if (result.state === "no-action") {
+  if (result.state === "no-action" || result.state === "waiting") {
     checklist.push("Confirm no outbound response is needed");
   }
 

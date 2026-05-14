@@ -37,9 +37,10 @@ No environment variables are required. Local development runs at the URL printed
 - Loads five synthetic inbox threads from `src/data/inbox.ts`.
 - Classifies each thread as `deadline-risk`, `stale-ask`, `owner-ambiguous`, `waiting`, or `no-action`.
 - Shows a first-viewport reviewer quick path with the top queued thread, queue size, urgency score, and approval gate.
-- Builds an urgency-ordered human review queue with source trails and checklist items, while keeping no-action reference threads out of the outbound review queue.
+- Builds an urgency-ordered outbound human review queue with source trails and checklist items, while keeping waiting and no-action reference threads out of the outbound packet.
 - Shows source-linked evidence, owner/waiting state, urgency, and a dry-run next action in prioritized order.
 - Generates a Markdown review packet preview that keeps evidence, source links, and no-send language together; if every fixture is reference-only, the packet says there are no outbound review items instead of showing a blank reviewer body.
+- Keeps waiting-on-counterparty threads visible on the radar board without treating them as outbound packet items, because their safest action is monitoring rather than a chase email.
 - Provides local-only packet actions: copy to clipboard, download Markdown, and jump to the packet preview.
 - Keeps the no-send boundary visible in the UI because any real email workflow needs explicit human approval.
 
@@ -61,6 +62,7 @@ No environment variables are required. Local development runs at the URL printed
 - `synthetic://` source links are used to model traceability without implying a live inbox integration.
 - Synthetic sources are rendered as provenance chips instead of clickable links because they are local fixture identifiers, not resolvable mailbox URLs.
 - The app previews next actions only. It does not send, schedule, archive, label, or mutate any external mailbox.
+- Waiting-on-counterparty threads stay on the radar board but are omitted from outbound review packets; this prevents a "do not chase" item from looking like a send-ready follow-up.
 - Next.js `dev` and `build` use webpack because Turbopack can panic on deep Windows automation worktree paths.
 
 ## Verification

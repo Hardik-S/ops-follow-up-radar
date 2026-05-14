@@ -22,8 +22,9 @@ export default function Home() {
     const result = resultsByThreadId.get(item.threadId);
     return result ? [result] : [];
   });
-  const noActionResults = results.filter((result) => result.state === "no-action");
-  const boardResults = [...prioritizedActionResults, ...noActionResults];
+  const actionThreadIds = new Set(reviewQueue.map((item) => item.threadId));
+  const referenceResults = results.filter((result) => !actionThreadIds.has(result.thread.id));
+  const boardResults = [...prioritizedActionResults, ...referenceResults];
 
   return (
     <main>
@@ -54,7 +55,7 @@ export default function Home() {
         </div>
         <div>
           <span>Action queue</span>
-          <strong>{reviewQueue.length} actionable</strong>
+          <strong>{reviewQueue.length} outbound</strong>
         </div>
         <a href="#review-queue">Review queue</a>
         <a href="#packet-preview">Inspect packet</a>
@@ -75,7 +76,7 @@ export default function Home() {
         <article>
           <span>Urgency score</span>
           <strong>{topReview?.urgency ?? 0}</strong>
-          <p>Ranked ahead of lower-risk or waiting threads.</p>
+          <p>Ranked ahead of lower-risk review items.</p>
         </article>
         <article>
           <span>Queue size</span>

@@ -39,8 +39,7 @@ describe("classifyThread", () => {
     expect(queue.map((item) => item.threadId)).toEqual([
       "TH-2041",
       "TH-2186",
-      "TH-2077",
-      "TH-2112"
+      "TH-2077"
     ]);
     expect(queue.every((item) => item.humanApprovalRequired)).toBe(true);
     expect(queue[0].reviewChecklist).toContain("Confirm the deadline before drafting");
@@ -52,6 +51,16 @@ describe("classifyThread", () => {
 
     expect(queue.map((item) => item.threadId)).not.toContain("TH-2205");
     expect(queue.every((item) => item.state !== "no-action")).toBe(true);
+  });
+
+  it("keeps waiting threads out of outbound review packets", () => {
+    const results = inboxThreads.map(classifyThread);
+    const queue = buildReviewQueue(results);
+    const packet = createFollowUpPacket(results);
+
+    expect(queue.map((item) => item.threadId)).not.toContain("TH-2112");
+    expect(packet).not.toContain("TH-2112");
+    expect(packet).not.toContain("do not chase");
   });
 
   it("creates a reviewer packet with source evidence and no-send language", () => {

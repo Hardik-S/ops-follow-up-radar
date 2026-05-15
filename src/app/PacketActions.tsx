@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { writePacketToClipboard } from "../lib/packetClipboard";
 
 type PacketActionsProps = {
   packet: string;
@@ -10,13 +11,7 @@ export function PacketActions({ packet }: PacketActionsProps) {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "blocked">("idle");
 
   async function copyPacket() {
-    if (!navigator.clipboard) {
-      setCopyState("blocked");
-      return;
-    }
-
-    await navigator.clipboard.writeText(packet);
-    setCopyState("copied");
+    setCopyState(await writePacketToClipboard(navigator.clipboard, packet));
   }
 
   return (

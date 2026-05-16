@@ -46,6 +46,31 @@ describe("classifyThread", () => {
     expect(queue[0].sourceTrail).toEqual(["synthetic://inbox/revenue-ops/TH-2041"]);
   });
 
+  it("uses the nearest deadline before thread ID when review urgency ties", () => {
+    const sharedThread = {
+      ...inboxThreads[4],
+      waitingOn: "me" as const,
+      hasUnansweredQuestion: true,
+      lastInboundDaysAgo: 2
+    };
+    const laterDeadline = classifyThread({
+      ...sharedThread,
+      id: "TH-ALPHA",
+      deadlineDaysAway: 12
+    });
+    const nearerDeadline = classifyThread({
+      ...sharedThread,
+      id: "TH-ZULU",
+      deadlineDaysAway: 5
+    });
+
+    expect(laterDeadline.urgency).toBe(nearerDeadline.urgency);
+    expect(buildReviewQueue([laterDeadline, nearerDeadline]).map((item) => item.threadId)).toEqual([
+      "TH-ZULU",
+      "TH-ALPHA"
+    ]);
+  });
+
   it("keeps no-action reference threads out of the outbound review queue", () => {
     const queue = buildReviewQueue(inboxThreads.map(classifyThread));
 

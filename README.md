@@ -1,6 +1,6 @@
 # Ops Follow-Up Radar
 
-Ops Follow-Up Radar turns a synthetic inbox export into an operator-review workflow. It is deliberately fixture-first: the app demonstrates stale-ask detection, owner ambiguity, deadline risk, waiting states, source-linked evidence, a prioritized human review queue, and a copy-ready packet without touching a real mailbox or sending email.
+Ops Follow-Up Radar turns a synthetic inbox export into an operator-review workflow. It is deliberately fixture-first: the app demonstrates stale-ask detection, fresh unanswered asks, owner ambiguity, deadline risk, waiting states, source-linked evidence, a prioritized human review queue, and a copy-ready packet without touching a real mailbox or sending email.
 
 ## Portfolio Signal
 
@@ -35,7 +35,7 @@ No environment variables are required. Local development runs at the URL printed
 ## What The First Slice Does
 
 - Loads five synthetic inbox threads from `src/data/inbox.ts`.
-- Classifies each thread as `deadline-risk`, `stale-ask`, `owner-ambiguous`, `waiting`, or `no-action`.
+- Classifies each thread as `deadline-risk`, `stale-ask`, `needs-response`, `owner-ambiguous`, `waiting`, or `no-action`.
 - Shows a first-viewport reviewer quick path with the top queued thread, queue size, urgency score, and approval gate.
 - Builds an urgency-ordered outbound human review queue with source trails and checklist items, while keeping waiting and no-action reference threads out of the outbound packet.
 - Shows source-linked evidence, owner/waiting state, urgency, and a dry-run next action in prioritized order.
@@ -63,6 +63,7 @@ No environment variables are required. Local development runs at the URL printed
 - Synthetic sources are rendered as provenance chips instead of clickable links because they are local fixture identifiers, not resolvable mailbox URLs.
 - The app previews next actions only. It does not send, schedule, archive, label, or mutate any external mailbox.
 - Waiting-on-counterparty threads stay on the radar board but are omitted from outbound review packets; this prevents a "do not chase" item from looking like a send-ready follow-up.
+- Fresh unanswered asks use `needs-response` instead of `stale-ask` so reviewers can separate ordinary reply debt from older neglected asks.
 - Review queue ties use nearest deadline before thread ID because two equally urgent human-owned asks should surface the tighter calendar risk first.
 - Next.js `dev` and `build` use webpack because Turbopack can panic on deep Windows automation worktree paths.
 

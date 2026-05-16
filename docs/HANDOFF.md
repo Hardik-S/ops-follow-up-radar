@@ -12,7 +12,7 @@
 
 All records in `src/data/inbox.ts` are invented examples. The app does not read Gmail, Outlook, Slack, CRM exports, calendars, labels, archives, sent mail, or personal inbox data.
 
-The fixture set intentionally covers `deadline-risk`, `stale-ask`, `owner-ambiguous`, `waiting`, and `no-action` paths.
+The fixture set intentionally covers `deadline-risk`, `stale-ask`, `owner-ambiguous`, `waiting`, and `no-action` paths. The classifier also supports `needs-response` for fresh unanswered asks; that state is regression-tested separately so fixture reviewers can distinguish reply debt from stale follow-up risk.
 
 Waiting-on-counterparty threads are reference items, not outbound packet items. They should remain visible on the radar board so reviewers understand the lane, but they should not appear in the generated packet because their preview action is to monitor rather than chase.
 

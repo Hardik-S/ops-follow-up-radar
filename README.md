@@ -63,6 +63,7 @@ No environment variables are required. Local development runs at the URL printed
 - Synthetic sources are rendered as provenance chips instead of clickable links because they are local fixture identifiers, not resolvable mailbox URLs.
 - The app previews next actions only. It does not send, schedule, archive, label, or mutate any external mailbox.
 - Waiting-on-counterparty threads stay on the radar board but are omitted from outbound review packets; this prevents a "do not chase" item from looking like a send-ready follow-up.
+- Review queue ties use nearest deadline before thread ID because two equally urgent human-owned asks should surface the tighter calendar risk first.
 - Next.js `dev` and `build` use webpack because Turbopack can panic on deep Windows automation worktree paths.
 
 ## Verification

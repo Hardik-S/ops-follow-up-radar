@@ -115,7 +115,12 @@ export function summarizeRadar(results: FollowUpResult[]) {
 export function buildReviewQueue(results: FollowUpResult[]): ReviewQueueItem[] {
   return [...results]
     .filter((result) => result.state !== "no-action" && result.state !== "waiting")
-    .sort((left, right) => right.urgency - left.urgency || left.thread.id.localeCompare(right.thread.id))
+    .sort(
+      (left, right) =>
+        right.urgency - left.urgency ||
+        compareDeadlineProximity(left.thread, right.thread) ||
+        left.thread.id.localeCompare(right.thread.id)
+    )
     .map((result) => ({
       threadId: result.thread.id,
       subject: result.thread.subject,
@@ -202,6 +207,13 @@ function buildReviewChecklist(result: FollowUpResult): string[] {
 
   checklist.push("Approve or rewrite the preview before anything leaves the outbox");
   return checklist;
+}
+
+function compareDeadlineProximity(left: InboxThread, right: InboxThread): number {
+  const leftDeadline = left.deadlineDaysAway ?? Number.POSITIVE_INFINITY;
+  const rightDeadline = right.deadlineDaysAway ?? Number.POSITIVE_INFINITY;
+
+  return leftDeadline - rightDeadline;
 }
 
 function chooseState(thread: InboxThread): FollowUpState {
